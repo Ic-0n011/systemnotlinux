@@ -6,7 +6,7 @@ import math  # Математические функции, например, д
 
 # Инициализация Pygame
 pygame.init()  # Запускает Pygame, подготавливая её для работы с графикой и событиями
-width, height = 800, 600  # Размеры окна: 800 пикселей в ширину, 600 в высоту
+width, height = 1200, 800  # Размеры окна: 800 пикселей в ширину, 600 в высоту
 screen = pygame.display.set_mode((width, height))  # Создаёт окно с заданными размерами
 clock = pygame.time.Clock()  # Объект для контроля частоты кадров (FPS), чтобы симуляция работала плавно
 font = pygame.font.SysFont("Arial", 20)  # Шрифт Arial размером 20 для отображения текста (скорости спутника)
@@ -73,28 +73,37 @@ def collision_handler(arbiter, space, data):
 
 # Создание объектов
 planet = Planet(
-    mass=1000,  # Масса планеты (1000 кг)
+    mass=100000,  # Масса планеты (100000 кг)
     size=50,  # Радиус планеты (50 пикселей)
-    position=(400, 300),  # Позиция в центре экрана
+    position=(600, 400),  # Позиция в центре экрана
     color=(0, 100, 255, 255),  # Синий цвет (RGBA)
     static=True  # Планета неподвижна
 )
-satellite = Satellite(
+satellite1 = Satellite(
     mass=100,  # Масса спутника (100 кг)
     size=10,  # Радиус спутника (10 пикселей)
-    position=(600, 300),  # Начальная позиция, расстояние до планеты r=200 пикселей
-    velocity=(0, 22.36),  # Начальная скорость (первая космическая, рассчитана для круговой орбиты)
+    position=(900, 400),  # Начальная позиция, расстояние до планеты r=200 пикселей
+    velocity=(0, 162.36),  # Начальная скорость
     color=(255, 255, 0, 255)  # Жёлтый цвет
 )
 
-objects = [planet, satellite]  # Список всех объектов для обновления
+satellite2 = Satellite(
+    mass=1,  # Масса спутника (1 кг)
+    size=10,  # Радиус спутника (10 пикселей)
+    position=(200, 400),  # Начальная позиция, расстояние до планеты r=400 пикселей
+    velocity=(10, -160.36),  # Начальная скорость
+    color=(255, 255, 0, 255)  # Жёлтый цвет
+)
+
+objects = [planet, satellite1, satellite2]  # Список всех объектов для обновления
 
 # Настройка обработчика столкновений
 handler = space.add_collision_handler(1, 2)  # Указываем, что обрабатываем столкновения между типами 1 (планета) и 2 (спутник)
 handler.begin = collision_handler  # Назначаем функцию обработки столкновений
 
 # Список для хранения траектории спутника
-trail = []  # Сохраняет до 100 последних позиций спутника для отрисовки пути
+trail1 = []  # Сохраняет до 100 последних позиций спутника для отрисовки пути
+trail2 = []  # Сохраняет до 100 последних позиций спутника для отрисовки пути
 
 # Настройка отрисовки
 draw_options = pymunk.pygame_util.DrawOptions(screen)  # Объект для отрисовки физических объектов Pymunk на экране Pygame
@@ -109,7 +118,7 @@ draw_options.draw_circle = custom_draw_circle  # Заменяем стандар
 # Основной цикл симуляции
 running = True
 while running:
-    # Обработка событий (например, закрытие окна)
+    # Обработка событий
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Если пользователь закрыл окно
             running = False  # Завершаем цикл
@@ -120,20 +129,29 @@ while running:
     space.step(1/120.0)  # Продвигаем физическую симуляцию на один шаг (1/120 секунды)
 
     # Сохранение траектории спутника
-    trail.append(satellite.body.position)  # Добавляем текущую позицию спутника
-    if len(trail) > 100:  # Ограничиваем длину траектории до 100 точек
-        trail.pop(0)  # Удаляем старую точку
+    trail1.append(satellite1.body.position)  # Добавляем текущую позицию спутника
+    if len(trail1) > 100:  # Ограничиваем длину траектории до 100 точек
+        trail1.pop(0)  # Удаляем старую точку
+    trail2.append(satellite1.body.position)  # Добавляем текущую позицию спутника
+    if len(trail2) > 100:  # Ограничиваем длину траектории до 100 точек
+        trail2.pop(0)  # Удаляем старую точку
 
     # Отрисовка
     screen.fill((0, 0, 0))  # Заливаем экран чёрным цветом (очищаем)
-    if len(trail) > 1:  # Если есть хотя бы 2 точки траектории
+    if len(trail1) > 1:  # Если есть хотя бы 2 точки траектории
         # Рисуем серую линию, соединяющую точки траектории
-        pygame.draw.lines(screen, (100, 100, 100), False, [(int(p.x), int(p.y)) for p in trail], 1)
+        pygame.draw.lines(screen, (100, 100, 100), False, [(int(p.x), int(p.y)) for p in trail1], 1)
+    if len(trail2) > 1:  # Если есть хотя бы 2 точки траектории
+        # Рисуем серую линию, соединяющую точки траектории
+        pygame.draw.lines(screen, (100, 100, 100), False, [(int(p.x), int(p.y)) for p in trail2], 1)
 
     # Отображение скорости спутника
-    speed = math.sqrt(satellite.body.velocity.x**2 + satellite.body.velocity.y**2)  # Вычисляем модуль скорости
-    speed_text = font.render(f"Speed: {speed:.2f} pixels/s", True, (255, 255, 255))  # Создаём текст
-    screen.blit(speed_text, (10, 10))  # Отображаем текст в верхнем левом углу
+    speed1 = math.sqrt(satellite1.body.velocity.x**2 + satellite1.body.velocity.y**2)  # Вычисляем модуль скорости
+    speed_text1 = font.render(f"Speed: {speed1:.2f} pixels/s", True, (255, 255, 255))  # Создаём текст
+    screen.blit(speed_text1, (10, 10))  # Отображаем текст в верхнем левом углу
+    speed2 = math.sqrt(satellite2.body.velocity.x**2 + satellite2.body.velocity.y**2)  # Вычисляем модуль скорости
+    speed_text2 = font.render(f"Speed: {speed2:.2f} pixels/s", True, (255, 255, 255))  # Создаём текст
+    screen.blit(speed_text2, (10, 40))  # Отображаем текст в верхнем левом углу
 
     space.debug_draw(draw_options)  # Отрисовываем физические объекты (планету и спутник)
     pygame.display.flip()  # Обновляем экран, показывая новый кадр

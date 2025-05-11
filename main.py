@@ -2,6 +2,7 @@
 
 import pygame as pg
 
+import config as cf
 from quiz import Quiz
 
 
@@ -11,7 +12,7 @@ class App:
     def __init__(self) -> None:
         """Приложение."""
         pg.init()
-        self.screen = pg.display.set_mode((1100, 700))
+        self.screen = pg.display.set_mode(cf.SIZE_WINDOW)
         self.is_running = False
         self.scene = Quiz()
         self.mainloop()

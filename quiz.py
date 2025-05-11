@@ -2,6 +2,7 @@
 
 import pygame as pg
 
+import config as cf
 from questions import easy
 
 
@@ -13,13 +14,15 @@ class Quiz:
         self.questions = easy
         self.current_question_idx = 0
         self.buttons = []
-        for i in self.questions[self.current_question_idx]["options"]:
-            self.buttons.append(Button(i, (250, 500)))
+        self.load_quesion()
 
     def load_quesion(self) -> None:
         """Загрузка вопроса."""
+        x, y = cf.SIZE_WINDOW
+        q = 200
         for i in self.questions[self.current_question_idx]["options"]:
-            self.buttons.append(Button(i, (250, 500)))
+            self.buttons.append(Button(i, (q, 500)))
+            q += 200
 
     def update(self) -> None:
         """Обновление событий."""

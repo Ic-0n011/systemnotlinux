@@ -18,18 +18,18 @@ class Quiz:
 
     def load_quesion(self) -> None:
         """Загрузка вопроса."""
-        x, y = cf.SIZE_WINDOW
-        q = 200
+        position = 0
         for i in self.questions[self.current_question_idx]["options"]:
-            self.buttons.append(Button(i, (q, 500)))
-            q += 200
+            position += cf.SIZE_WINDOW[0] / 5
+            self.buttons.append(Button(i, (position, 500)))
+
 
     def update(self) -> None:
         """Обновление событий."""
 
     def render(self, screen: pg.Surface) -> None:
         """Отрисовка."""
-        font = pg.font.Font(None, 30)
+        font = pg.font.Font(None, 70)
         surface = font.render(self.questions[0]["text"], True, (255, 255, 255))  # noqa: FBT003
         screen.blit(surface, (100, 100))
 
@@ -50,7 +50,7 @@ class Button:
     def __init__(self, text: str, coords: tuple[int, int]) -> None:
         """Кнопочка."""
         self.text = text
-        font = pg.font.Font(None, 60)
+        font = pg.font.Font(None, 50)
         self.surface = font.render(text, True, (0, 255, 0), (255, 0, 0))  # noqa: FBT003
         self.coords = coords
         self.rect = self.surface.get_rect()

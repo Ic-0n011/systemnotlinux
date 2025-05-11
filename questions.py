@@ -2,7 +2,7 @@
 
 easy = [
     {
-        "text": "1",
-        "options": [1, 2, 3, 4],
+        "text": "HeilHHeilHHeilHHeilH",
+        "options": ["HeilH", "he", "hi", "hello"],
     },
 ]

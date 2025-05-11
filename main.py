@@ -11,7 +11,7 @@ class App:
     def __init__(self) -> None:
         """Приложение."""
         pg.init()
-        self.screen = pg.display.set_mode((1400, 600))
+        self.screen = pg.display.set_mode((1100, 700))
         self.is_running = False
         self.scene = Quiz()
         self.mainloop()
@@ -30,7 +30,7 @@ class App:
         self.scene.update()
 
     def handle_events(self) -> None:
-        """Сбор событий и реакция на них."""  # noqa: RUF002 <- раф ругается на букву С, б, о, р
+        """Сбор событий и реакция на них."""
         events = pg.event.get()
         for event in events:
             if event.type == pg.QUIT:

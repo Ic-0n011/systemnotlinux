@@ -9,6 +9,7 @@ easy = [
             "hi",
             "hello",
         ],
+        "answer_idx": 0,
     },
     {
         "text": "2",
@@ -18,6 +19,7 @@ easy = [
             "23",
             "24",
         ],
+        "answer_idx": 0,
     },
     {
         "text": "3",
@@ -27,5 +29,6 @@ easy = [
             "33",
             "34",
         ],
+        "answer_idx": 0,
     },
 ]

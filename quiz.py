@@ -1,6 +1,8 @@
 """Модуль викторины."""
+from __future__ import annotations
 
 from typing import Callable
+
 import pygame as pg
 
 import config as cf
@@ -17,30 +19,32 @@ class Quiz:
         self.right_answer_counter = 0
         self.wrong_answer_counter = 0
         self.sprites = pg.sprite.Group()
-        self.make_widjets()
 
-    def make_widjets(self) -> None:
+
+    def make_widjets(self, screen: pg.Surface) -> None:
         """Создает спрайты для текущего вопроса."""
         question = self.questions[self.current_question_idx]
         text = question["text"]
         options = question["options"]
         answer_idx = question["answer_idx"]
 
-        button_y = 500 #FIXME: расичтать от размера экрана
+        button_y = int(screen.get_height() * 0.75)
+        button_x = int(screen.get_width() * 0.16)
 
         for num, option in enumerate(options, 1):
-
-            def callback(num) -> None:
+            def callback(num: int) -> None:
                 """Эта функция вызывается при вызове кнопки."""
-                print("Нажата кнопка ", num)
                 if answer_idx == num - 1:
                     self.right_answer_counter += 1
                 else:
                     self.wrong_answer_counter += 1
 
-                print(self.right_answer_counter, self.wrong_answer_counter)
-
-            Button(self.sprites, option, (100 * num, button_y), lambda param=num: callback(param))
+            Button(
+                self.sprites,
+                option,
+                (button_x * num, button_y),
+                lambda param=num: callback(param),
+            )
 
     def update(self) -> None:
         """Обновление событий."""
@@ -48,9 +52,10 @@ class Quiz:
     def render(self, screen: pg.Surface) -> None:
         """Отрисовка."""
         font = pg.font.Font(None, 70)
-        surface = font.render(self.questions[0]["text"], True, (255, 255, 255))  # noqa: FBT003
+        surface = font.render(self.questions[0]["text"], True, (255, 255, 255))
         screen.blit(surface, (100, 100))
 
+        self.make_widjets(screen)
         self.sprites.draw(screen)
 
     def handle_events(self, events: list[pg.event.Event]) -> None:
@@ -62,9 +67,6 @@ class Quiz:
                         sprite.on_click()
 
 
-
-
-
 class Button(pg.sprite.Sprite):
     """Кнопка."""
 
@@ -74,13 +76,14 @@ class Button(pg.sprite.Sprite):
             text: str,
             coords: tuple[int, int],
             callback: Callable,
+            *groups: pg.sprite.AbstractGroup,
     ) -> None:
         """Кнопочка."""
-        super().__init__()
+        super().__init__(*groups)
         self.text = text
         self.callback = callback
         font = pg.font.Font(None, 50)
-        self.image = font.render(text, True, (0, 255, 0), (255, 0, 0))  # noqa: FBT003
+        self.image = font.render(text, True, (0, 255, 0), (255, 0, 0))
         self.coords = coords
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
@@ -90,3 +93,20 @@ class Button(pg.sprite.Sprite):
         """О нет на кнопку нажали, кто посмел."""
         if self.rect.collidepoint(pg.mouse.get_pos()):
             self.callback()
+
+
+class QuestionBox(pg.sprite.Sprite):
+    """Спрайт с вопросом."""
+
+    def __init__(
+            self,
+            group: pg.sprite.Group,
+            text: str,
+            coords: tuple[int, int],
+            *groups: pg.sprite.AbstractGroup,
+            ) -> None:
+        """Спрайт с вопросом."""
+        super().__init__(*groups)
+        group.add(self)
+        self.text = text
+        self.coords = coords

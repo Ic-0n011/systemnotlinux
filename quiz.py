@@ -28,6 +28,12 @@ class Quiz:
         options = question["options"]
         answer_idx = question["answer_idx"]
 
+        qubox_y = int(screen.get_height() * 0.15)
+        qubox_x = int(screen.get_width() * 0.16)
+        qubox_max_width = int(screen.get_width() * 0.8)
+
+        QuestionBox(self.sprites, text, (qubox_x, qubox_y), qubox_max_width)
+
         button_y = int(screen.get_height() * 0.75)
         button_x = int(screen.get_width() * 0.16)
 
@@ -51,10 +57,6 @@ class Quiz:
 
     def render(self, screen: pg.Surface) -> None:
         """Отрисовка."""
-        font = pg.font.Font(None, 70)
-        surface = font.render(self.questions[0]["text"], True, (255, 255, 255))
-        screen.blit(surface, (100, 100))
-
         self.make_widjets(screen)
         self.sprites.draw(screen)
 
@@ -80,14 +82,14 @@ class Button(pg.sprite.Sprite):
     ) -> None:
         """Кнопочка."""
         super().__init__(*groups)
+        group.add(self)
         self.text = text
-        self.callback = callback
-        font = pg.font.Font(None, 50)
-        self.image = font.render(text, True, (0, 255, 0), (255, 0, 0))
         self.coords = coords
+        self.callback = callback
+
+        self.image = cf.FONT_BUTTON.render(text, True, (0, 255, 0))
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
-        group.add(self)
 
     def on_click(self) -> None | bool:
         """О нет на кнопку нажали, кто посмел."""
@@ -103,10 +105,45 @@ class QuestionBox(pg.sprite.Sprite):
             group: pg.sprite.Group,
             text: str,
             coords: tuple[int, int],
+            max_width: int,
             *groups: pg.sprite.AbstractGroup,
-            ) -> None:
+    ) -> None:
         """Спрайт с вопросом."""
         super().__init__(*groups)
         group.add(self)
         self.text = text
         self.coords = coords
+        self.max_width = max_width
+        self.font = cf.FONT_QUESTIONBOX
+
+        # Создаем изображение и прямоугольник
+        self.image, self.rect = self._render_text()
+        self.rect.topleft = self.coords
+
+    def _render_text(self) -> tuple[pg.Surface, pg.Rect]:
+        """Рендерит текст с переносом на строки."""
+        # Разбиваем текст на строки
+        words = self.text.split(" ")
+        lines = []
+        current_line = ""
+        for word in words:
+            test_line = current_line + word + " "
+            if self.font.size(test_line)[0] <= self.max_width:
+                current_line = test_line
+            else:
+                lines.append(current_line.strip())
+                current_line = word + " "
+        lines.append(current_line.strip())
+
+        # Создаем поверхность для всех строк
+        line_height = self.font.get_height()
+        total_height = len(lines) * line_height
+        image = pg.Surface((self.max_width, total_height), pg.SRCALPHA)
+
+        # Рендерим строки
+        for i, line in enumerate(lines):
+            rendered_text = self.font.render(line, True, cf.RED)
+            image.blit(rendered_text, (0, i * line_height))
+
+        rect = image.get_rect()
+        return image, rect

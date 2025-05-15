@@ -45,6 +45,12 @@ class Quiz:
                 else:
                     self.wrong_answer_counter += 1
 
+                if len(self.questions) > self.current_question_idx + 1:
+                    self.current_question_idx += 1
+                else:
+                    print("Ты ответил правильно", self.right_answer_counter, "раз")
+                    print("и ответил не правильно", self.wrong_answer_counter, "раз")
+
             Button(
                 self.sprites,
                 option,

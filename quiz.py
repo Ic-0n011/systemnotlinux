@@ -12,30 +12,32 @@ from questions import easy
 class Quiz:
     """Викторина."""
 
-    def __init__(self) -> None:
+    def __init__(self, screen: pg.Surface) -> None:
         """Викторина."""
+        self.screen = screen
         self.questions = easy
         self.current_question_idx = 0
         self.right_answer_counter = 0
         self.wrong_answer_counter = 0
         self.sprites = pg.sprite.Group()
+        self.make_widjets()
 
 
-    def make_widjets(self, screen: pg.Surface) -> None:
+    def make_widjets(self) -> None:
         """Создает спрайты для текущего вопроса."""
         question = self.questions[self.current_question_idx]
         text = question["text"]
         options = question["options"]
         answer_idx = question["answer_idx"]
 
-        qubox_y = int(screen.get_height() * 0.15)
-        qubox_x = int(screen.get_width() * 0.16)
-        qubox_max_width = int(screen.get_width() * 0.8)
+        qubox_y = int(self.screen.get_height() * 0.15)
+        qubox_x = int(self.screen.get_width() * 0.16)
+        qubox_max_width = int(self.screen.get_width() * 0.8)
 
         QuestionBox(self.sprites, text, (qubox_x, qubox_y), qubox_max_width)
 
-        button_y = int(screen.get_height() * 0.75)
-        button_x = int(screen.get_width() * 0.16)
+        button_y = int(self.screen.get_height() * 0.75)
+        button_x = int(self.screen.get_width() * 0.16)
 
         for num, option in enumerate(options, 1):
             def callback(num: int) -> None:
@@ -47,9 +49,10 @@ class Quiz:
 
                 if len(self.questions) > self.current_question_idx + 1:
                     self.current_question_idx += 1
-                else:
-                    print("Ты ответил правильно", self.right_answer_counter, "раз")
-                    print("и ответил не правильно", self.wrong_answer_counter, "раз")
+                    self.sprites.empty()
+                    self.make_widjets()
+                print("Ты ответил правильно", self.right_answer_counter, "раз")
+                print("и ответил не правильно", self.wrong_answer_counter, "раз")
 
             Button(
                 self.sprites,
@@ -61,10 +64,9 @@ class Quiz:
     def update(self) -> None:
         """Обновление событий."""
 
-    def render(self, screen: pg.Surface) -> None:
+    def render(self) -> None:
         """Отрисовка."""
-        self.make_widjets(screen)
-        self.sprites.draw(screen)
+        self.sprites.draw(self.screen)
 
     def handle_events(self, events: list[pg.event.Event]) -> None:
         """Реакция на события."""

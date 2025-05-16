@@ -14,7 +14,7 @@ class App:
         pg.init()
         self.screen = pg.display.set_mode(cf.SIZE_WINDOW)
         self.is_running = False
-        self.scene = Quiz()
+        self.scene = Quiz(self.screen)
         self.mainloop()
 
     def mainloop(self) -> None:
@@ -45,7 +45,8 @@ class App:
 
     def render(self) -> None:
         """Отрисовка."""
-        self.scene.render(self.screen)
+        self.screen.fill(cf.BLACK)
+        self.scene.render()
         pg.display.flip()
 
 

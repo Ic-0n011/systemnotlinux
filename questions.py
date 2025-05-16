@@ -36,4 +36,9 @@ easy = [
         ],
         "answer_idx": 0,
     },
+    {
+        "text": "Вы выйграли",
+        "options": [],
+        "answer_idx": 0,
+    },
 ]

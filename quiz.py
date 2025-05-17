@@ -75,9 +75,6 @@ class Quiz:
                     text += "Всего вопросов " + str(self.current_question_idx + 1) + ". "
                     self._create_text(text, (text_x, text_y), text_max_width)
 
-                print("Ты ответил правильно", self.right_answer_counter, "раз")
-                print("и ответил не правильно", self.wrong_answer_counter, "раз")
-
             # Создание кнопки
             btn = Button(
                 self.sprites,

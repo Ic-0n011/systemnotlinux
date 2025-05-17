@@ -2,14 +2,14 @@
 
 easy = [
     {
-    "text": "Это очень длинный вопрос, который должен переноситься на следующую строку автоматически, чтобы не выходить за границы экрана.",  # noqa: E501
-    "options": ["Ответ 1", "Ответ 2", "Ответ 3", "Ответ 4"],
-    "answer_idx": 0,
+        "text": "Это очень длинный вопрос, который должен переноситься на следующую строку автоматически, чтобы не выходить за границы экрана.",  # noqa: E501
+        "options": ["Ответ 1", "Ответ 2", "Ответ 3", "Ответ 4"],
+        "answer_idx": 0,
     },
     {
         "text": "HeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilH HeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilH",
         "options": [
-            "HeilH",
+            "qwerty1qwerty2qwerty3qwerty4qwerty5qwerty6qwerty1qwerty2qwerty3qwerty4qwerty5qwerty6",
             "he",
             "hi",
             "hello",

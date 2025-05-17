@@ -177,21 +177,21 @@ class Button(pg.sprite.Sprite):
         self.max_width = max_width
         self.font = cf.FONT_BUTTON
 
-        self.image = self._render_wrapped_text(option)
+        self.image = self._render_wrapped_text()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
 
-    def _render_wrapped_text(self, lines: list[str]) -> pg.Surface:
+    def _render_wrapped_text(self) -> pg.Surface:
         line_height = self.font.get_height()
         padding = 10
-        box_height = line_height * len(lines) + padding * 2
+        box_height = line_height * len(self.option) + padding * 2
         surface = pg.Surface((self.max_width, box_height), pg.SRCALPHA)
 
         # Фон кнопки
         pg.draw.rect(surface, (230, 230, 230), surface.get_rect(), border_radius=6)
 
         # Рисуем текст
-        for i, line in enumerate(lines):
+        for i, line in enumerate(self.option):
             text_surf = self.font.render(line, True, cf.BLUE)
             surface.blit(text_surf, (padding, padding + i * line_height))
 

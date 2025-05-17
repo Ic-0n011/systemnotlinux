@@ -60,6 +60,11 @@ class Quiz:
                     self.make_widjets()
                 else:
                     self.sprites.empty()
+                    text_y = int(self.screen.get_height() * 0.15)
+                    text_x = int(self.screen.get_width() * 0.16)
+                    percent = self.right_answer_counter / len(self.questions) * 100
+                    text = "Вы ответили правильно на " + str(percent) + "%"
+                    Text(self.sprites, text, (text_x, text_y))
                 print("Ты ответил правильно", self.right_answer_counter, "раз")
                 print("и ответил не правильно", self.wrong_answer_counter, "раз")
 
@@ -70,7 +75,12 @@ class Quiz:
                 lambda param=num: callback(param),
             )
 
-    def _create_question_text(self, text: str, coords: tuple[int, int], max_width: int) -> None:
+    def _create_question_text(
+            self,
+            text: str,
+            coords: tuple[int, int],
+            max_width: int,
+    ) -> None:
         """Создает спрайты Text для каждой строки вопроса."""
         lines = self.wrap_text(text, cf.FONT_TEXT, max_width)
         x, y = coords

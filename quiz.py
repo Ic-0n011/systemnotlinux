@@ -22,7 +22,6 @@ class Quiz:
         self.sprites = pg.sprite.Group()
         self.make_widjets()
 
-
     def make_widjets(self) -> None:
         """Создает спрайты для текущего вопроса."""
         question = self.questions[self.current_question_idx]
@@ -38,7 +37,7 @@ class Quiz:
         qubox_x = int(self.screen.get_width() * 0.16)
         qubox_max_width = int(self.screen.get_width() * 0.8)
 
-        self._create_question_text(text, (qubox_x, qubox_y), qubox_max_width)
+        self._create_text(text, (qubox_x, qubox_y), qubox_max_width)
 
         # Кнопки
         answer_idx = question["answer_idx"]
@@ -64,12 +63,17 @@ class Quiz:
                     self.sprites.empty()
                     self.make_widjets()
                 else:
+                    # Показ статистики
                     self.sprites.empty()
                     text_y = int(self.screen.get_height() * 0.15)
                     text_x = int(self.screen.get_width() * 0.16)
+                    text_max_width = int(self.screen.get_width() * 0.76)
                     percent = self.right_answer_counter / len(self.questions) * 100
-                    text = "Вы ответили правильно на " + str(round(percent)) + "%"
-                    Text(self.sprites, text, (text_x, text_y))
+                    text = "Вы ответили правильно на " + str(round(percent)) + "% вопросов. "
+                    text += "Дано правильных ответов - " + str(self.right_answer_counter) + ", "
+                    text += "а неправильных - " + str(self.wrong_answer_counter) + ". "
+                    text += "Всего вопросов " + str(self.current_question_idx + 1) + ". "
+                    self._create_text(text, (text_x, text_y), text_max_width)
 
                 print("Ты ответил правильно", self.right_answer_counter, "раз")
                 print("и ответил не правильно", self.wrong_answer_counter, "раз")
@@ -86,7 +90,7 @@ class Quiz:
             # Перемещение вниз для следующей кнопки
             current_y += btn.rect.height + button_margin
 
-    def _create_question_text(
+    def _create_text(
             self,
             text: str,
             coords: tuple[int, int],

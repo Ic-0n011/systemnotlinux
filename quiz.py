@@ -41,12 +41,12 @@ class Quiz:
         self._create_question_text(text, (qubox_x, qubox_y), qubox_max_width)
 
         # Кнопки
-        options = question["options"]
         answer_idx = question["answer_idx"]
+        options = question["options"]
 
         button_x = int(self.screen.get_width() * 0.16)
         button_y = int(self.screen.get_height() * 0.4)
-        button_width = int(self.screen.get_width() * 0.68)
+        button_width = int(self.screen.get_width() * 0.68) - 20
         button_margin = 20
         current_y = button_y
 
@@ -77,7 +77,7 @@ class Quiz:
             # Создание кнопки
             btn = Button(
                 self.sprites,
-                option,
+                self.wrap_text(option, cf.FONT_BUTTON, button_width),
                 (button_x, current_y),
                 lambda param=idx + 1: callback(param),
                 max_width=button_width,
@@ -162,7 +162,7 @@ class Button(pg.sprite.Sprite):
     def __init__(
         self,
         group: pg.sprite.Group,
-        text: str,
+        option: list[str],
         coords: tuple[int, int],
         callback: Callable,
         max_width: int = 300,
@@ -171,49 +171,15 @@ class Button(pg.sprite.Sprite):
         """Кнопка."""
         super().__init__(*groups)
         group.add(self)
-        self.text = text
+        self.option = option
         self.coords = coords
         self.callback = callback
         self.max_width = max_width
         self.font = cf.FONT_BUTTON
 
-        lines = self._wrap_text(self.text)
-        self.image = self._render_wrapped_text(lines)
+        self.image = self._render_wrapped_text(option)
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
-
-    def _wrap_text(self, text: str) -> list[str]:
-        """Разбивает текст на строки по ширине max_width.
-
-        Делает перенос даже для длинных слов.
-        """
-        words = text.split()
-        lines = []
-        current_line = ""
-
-        for word in words:
-            if self.font.size(word)[0] > self.max_width - 20:
-                # разбиваем слишком длинное слово по буквам
-                for char in word:
-                    test_line = current_line + char
-                    if self.font.size(test_line)[0] <= self.max_width - 20:
-                        current_line = test_line
-                    else:
-                        lines.append(current_line)
-                        current_line = char
-                current_line += " "
-            else:
-                test_line = current_line + word + " "
-                if self.font.size(test_line)[0] <= self.max_width - 20:
-                    current_line = test_line
-                else:
-                    lines.append(current_line.strip())
-                    current_line = word + " "
-
-        if current_line.strip():
-            lines.append(current_line.strip())
-
-        return lines
 
     def _render_wrapped_text(self, lines: list[str]) -> pg.Surface:
         line_height = self.font.get_height()

@@ -26,16 +26,23 @@ class Quiz:
     def make_widjets(self) -> None:
         """Создает спрайты для текущего вопроса."""
         question = self.questions[self.current_question_idx]
-        text = question["text"]
-        options = question["options"]
-        answer_idx = question["answer_idx"]
 
+        # Счетчик
+        counter = str(self.current_question_idx + 1) + " из " + str(len(self.questions))
+
+        Text(self.sprites, counter, (10, 10))
+
+        # Текст c вопросом
+        text = question["text"]
         qubox_y = int(self.screen.get_height() * 0.15)
         qubox_x = int(self.screen.get_width() * 0.16)
         qubox_max_width = int(self.screen.get_width() * 0.8)
 
-        QuestionBox(self.sprites, text, (qubox_x, qubox_y), qubox_max_width)
+        self._create_question_text(text, (qubox_x, qubox_y), qubox_max_width)
 
+        # Кнопки
+        options = question["options"]
+        answer_idx = question["answer_idx"]
         button_y = int(self.screen.get_height() * 0.75)
         button_x = int(self.screen.get_width() * 0.16)
 
@@ -51,6 +58,8 @@ class Quiz:
                     self.current_question_idx += 1
                     self.sprites.empty()
                     self.make_widjets()
+                else:
+                    self.sprites.empty()
                 print("Ты ответил правильно", self.right_answer_counter, "раз")
                 print("и ответил не правильно", self.wrong_answer_counter, "раз")
 
@@ -60,6 +69,30 @@ class Quiz:
                 (button_x * num, button_y),
                 lambda param=num: callback(param),
             )
+
+    def _create_question_text(self, text: str, coords: tuple[int, int], max_width: int) -> None:
+        """Создает спрайты Text для каждой строки вопроса."""
+        lines = self.wrap_text(text, cf.FONT_TEXT, max_width)
+        x, y = coords
+        line_height = cf.FONT_TEXT.get_height()
+        for line in lines:
+            Text(self.sprites, line, (x, y))
+            y += line_height
+
+    def wrap_text(self, text: str, font: pg.font.Font, max_width: int) -> list[str]:
+        """Разбивает текст на строки, не превышающие max_width."""
+        words = text.split(" ")
+        lines = []
+        current_line = ""
+        for word in words:
+            test_line = current_line + word + " "
+            if font.size(test_line)[0] <= max_width:
+                current_line = test_line
+            else:
+                lines.append(current_line.strip())
+                current_line = word + " "
+        lines.append(current_line.strip())
+        return lines
 
     def update(self) -> None:
         """Обновление событий."""
@@ -95,7 +128,7 @@ class Button(pg.sprite.Sprite):
         self.coords = coords
         self.callback = callback
 
-        self.image = cf.FONT_BUTTON.render(text, True, (0, 255, 0))
+        self.image = cf.FONT_BUTTON.render(text, True, cf.BLUE)
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
 
@@ -105,53 +138,24 @@ class Button(pg.sprite.Sprite):
             self.callback()
 
 
-class QuestionBox(pg.sprite.Sprite):
-    """Спрайт с вопросом."""
+class Text(pg.sprite.Sprite):
+    """Выводит данный ему текст."""
 
     def __init__(
             self,
             group: pg.sprite.Group,
             text: str,
             coords: tuple[int, int],
-            max_width: int,
             *groups: pg.sprite.AbstractGroup,
-    ) -> None:
-        """Спрайт с вопросом."""
+            ) -> None:
+        """Выводит данный ему текст."""
         super().__init__(*groups)
         group.add(self)
         self.text = text
         self.coords = coords
-        self.max_width = max_width
-        self.font = cf.FONT_QUESTIONBOX
+        self.font = cf.FONT_TEXT
 
-        # Создаем изображение и прямоугольник
-        self.image, self.rect = self._render_text()
+        self.image = self.font.render(text, True, cf.GREEN)
+        self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
 
-    def _render_text(self) -> tuple[pg.Surface, pg.Rect]:
-        """Рендерит текст с переносом на строки."""
-        # Разбиваем текст на строки
-        words = self.text.split(" ")
-        lines = []
-        current_line = ""
-        for word in words:
-            test_line = current_line + word + " "
-            if self.font.size(test_line)[0] <= self.max_width:
-                current_line = test_line
-            else:
-                lines.append(current_line.strip())
-                current_line = word + " "
-        lines.append(current_line.strip())
-
-        # Создаем поверхность для всех строк
-        line_height = self.font.get_height()
-        total_height = len(lines) * line_height
-        image = pg.Surface((self.max_width, total_height), pg.SRCALPHA)
-
-        # Рендерим строки
-        for i, line in enumerate(lines):
-            rendered_text = self.font.render(line, True, cf.RED)
-            image.blit(rendered_text, (0, i * line_height))
-
-        rect = image.get_rect()
-        return image, rect

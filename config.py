@@ -5,6 +5,7 @@ import pygame as pg
 pg.font.init()
 FONT_BUTTON = pg.font.Font(None, 50)
 FONT_QUESTIONBOX = pg.font.Font(None, 70)
+FONT_TEXT = pg.font.Font(None, 70)
 
 # Цвета
 RED = (255, 0, 0)

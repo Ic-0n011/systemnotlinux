@@ -7,7 +7,7 @@ easy = [
     "answer_idx": 0,
     },
     {
-        "text": "HeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilH",
+        "text": "HeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilH HeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilHHeilH",
         "options": [
             "HeilH",
             "he",
@@ -34,11 +34,6 @@ easy = [
             "33",
             "34",
         ],
-        "answer_idx": 0,
-    },
-    {
-        "text": "Вы выйграли",
-        "options": [],
         "answer_idx": 0,
     },
 ]

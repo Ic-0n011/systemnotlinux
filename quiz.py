@@ -177,11 +177,12 @@ class Button(pg.sprite.Sprite):
         self.max_width = max_width
         self.font = cf.FONT_BUTTON
 
-        self.image = self._render_wrapped_text()
+        self.image = self._create_button_surface()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
 
-    def _render_wrapped_text(self) -> pg.Surface:
+    def _create_button_surface(self) -> pg.Surface:
+        """Создаёт поверхность кнопки с фоном и текстом."""
         line_height = self.font.get_height()
         padding = 10
         box_height = line_height * len(self.option) + padding * 2

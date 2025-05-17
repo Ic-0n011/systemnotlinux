@@ -43,10 +43,15 @@ class Quiz:
         # Кнопки
         options = question["options"]
         answer_idx = question["answer_idx"]
-        button_y = int(self.screen.get_height() * 0.75)
-        button_x = int(self.screen.get_width() * 0.16)
 
-        for num, option in enumerate(options, 1):
+        button_x = int(self.screen.get_width() * 0.16)
+        button_y = int(self.screen.get_height() * 0.4)
+        button_width = int(self.screen.get_width() * 0.68)
+        button_margin = 20
+        current_y = button_y
+
+        for idx, option in enumerate(options):
+
             def callback(num: int) -> None:
                 """Эта функция вызывается при вызове кнопки."""
                 if answer_idx == num - 1:
@@ -63,17 +68,23 @@ class Quiz:
                     text_y = int(self.screen.get_height() * 0.15)
                     text_x = int(self.screen.get_width() * 0.16)
                     percent = self.right_answer_counter / len(self.questions) * 100
-                    text = "Вы ответили правильно на " + str(percent) + "%"
+                    text = "Вы ответили правильно на " + str(round(percent)) + "%"
                     Text(self.sprites, text, (text_x, text_y))
+
                 print("Ты ответил правильно", self.right_answer_counter, "раз")
                 print("и ответил не правильно", self.wrong_answer_counter, "раз")
 
-            Button(
+            # Создание кнопки
+            btn = Button(
                 self.sprites,
                 option,
-                (button_x * num, button_y),
-                lambda param=num: callback(param),
+                (button_x, current_y),
+                lambda param=idx + 1: callback(param),
+                max_width=button_width,
             )
+
+            # Перемещение вниз для следующей кнопки
+            current_y += btn.rect.height + button_margin
 
     def _create_question_text(
             self,
@@ -90,18 +101,43 @@ class Quiz:
             y += line_height
 
     def wrap_text(self, text: str, font: pg.font.Font, max_width: int) -> list[str]:
-        """Разбивает текст на строки, не превышающие max_width."""
+        """Разбивает текст на строки, не превышающие max_width, с переносом длинных слов."""
         words = text.split(" ")
         lines = []
         current_line = ""
+
         for word in words:
+            # Проверяем, помещается ли слово целиком
             test_line = current_line + word + " "
             if font.size(test_line)[0] <= max_width:
                 current_line = test_line
-            else:
-                lines.append(current_line.strip())
-                current_line = word + " "
-        lines.append(current_line.strip())
+            else:  # noqa: PLR5501
+                # Если слово слишком длинное, разбиваем его с дефисом
+                if font.size(word)[0] > max_width:
+                    temp_word = ""
+                    for char in word:
+                        test_word = temp_word + char + "-"
+                        if font.size(current_line + test_word)[0] <= max_width:
+                            temp_word += char
+                        else:
+                            # Добавляем текущую линию с дефисом
+                            if current_line:
+                                lines.append(current_line.strip())
+                                current_line = ""
+                            lines.append(temp_word + "-")
+                            temp_word = char
+                    # Оставшаяся часть слова
+                    current_line = temp_word + " "
+                else:
+                    # Если слово помещается в новую строку
+                    if current_line:
+                        lines.append(current_line.strip())
+                    current_line = word + " "
+
+        # Добавляем последнюю строку, если она не пустая
+        if current_line:
+            lines.append(current_line.strip())
+
         return lines
 
     def update(self) -> None:
@@ -121,29 +157,82 @@ class Quiz:
 
 
 class Button(pg.sprite.Sprite):
-    """Кнопка."""
+    """Класс кнопки."""
 
     def __init__(
-            self,
-            group: pg.sprite.Group,
-            text: str,
-            coords: tuple[int, int],
-            callback: Callable,
-            *groups: pg.sprite.AbstractGroup,
+        self,
+        group: pg.sprite.Group,
+        text: str,
+        coords: tuple[int, int],
+        callback: Callable,
+        max_width: int = 300,
+        *groups: pg.sprite.AbstractGroup,
     ) -> None:
-        """Кнопочка."""
+        """Кнопка."""
         super().__init__(*groups)
         group.add(self)
         self.text = text
         self.coords = coords
         self.callback = callback
+        self.max_width = max_width
+        self.font = cf.FONT_BUTTON
 
-        self.image = cf.FONT_BUTTON.render(text, True, cf.BLUE)
+        lines = self._wrap_text(self.text)
+        self.image = self._render_wrapped_text(lines)
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
 
-    def on_click(self) -> None | bool:
-        """О нет на кнопку нажали, кто посмел."""
+    def _wrap_text(self, text: str) -> list[str]:
+        """Разбивает текст на строки по ширине max_width.
+
+        Делает перенос даже для длинных слов.
+        """
+        words = text.split()
+        lines = []
+        current_line = ""
+
+        for word in words:
+            if self.font.size(word)[0] > self.max_width - 20:
+                # разбиваем слишком длинное слово по буквам
+                for char in word:
+                    test_line = current_line + char
+                    if self.font.size(test_line)[0] <= self.max_width - 20:
+                        current_line = test_line
+                    else:
+                        lines.append(current_line)
+                        current_line = char
+                current_line += " "
+            else:
+                test_line = current_line + word + " "
+                if self.font.size(test_line)[0] <= self.max_width - 20:
+                    current_line = test_line
+                else:
+                    lines.append(current_line.strip())
+                    current_line = word + " "
+
+        if current_line.strip():
+            lines.append(current_line.strip())
+
+        return lines
+
+    def _render_wrapped_text(self, lines: list[str]) -> pg.Surface:
+        line_height = self.font.get_height()
+        padding = 10
+        box_height = line_height * len(lines) + padding * 2
+        surface = pg.Surface((self.max_width, box_height), pg.SRCALPHA)
+
+        # Фон кнопки
+        pg.draw.rect(surface, (230, 230, 230), surface.get_rect(), border_radius=6)
+
+        # Рисуем текст
+        for i, line in enumerate(lines):
+            text_surf = self.font.render(line, True, cf.BLUE)
+            surface.blit(text_surf, (padding, padding + i * line_height))
+
+        return surface
+
+    def on_click(self) -> None:
+        """Действие на нажатие."""
         if self.rect.collidepoint(pg.mouse.get_pos()):
             self.callback()
 

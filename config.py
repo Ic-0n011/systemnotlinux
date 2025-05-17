@@ -1,9 +1,6 @@
 """Модуль конфигураций."""
 import pygame as pg
 
-# Игровые размеры
-SIZE_WINDOW = (1100, 700)
-
 # Шрифты
 pg.font.init()
 FONT_BUTTON = pg.font.Font(None, 50)

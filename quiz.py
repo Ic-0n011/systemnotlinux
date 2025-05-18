@@ -256,7 +256,7 @@ class Image(pg.sprite.Sprite):
     def __init__(
             self,
             group: pg.sprite.Group,
-            image_name: str,  # Имя файла изображения в папке media
+            image_name: str,
             coords: tuple[int, int],
             *groups: pg.sprite.AbstractGroup,
     ) -> None:

@@ -14,10 +14,12 @@ class App:
     def __init__(self) -> None:
         """Приложение."""
         pg.init()
+        pg.mixer.init()
         # Полноэкранный режим
         self.screen = pg.display.set_mode()
         self.is_running = False
         self.scene = Quiz(self.screen)
+        pg.mixer.music.load("media/music.mp3")
 
         # Формируем абсолютный путь к файлу
         base_path = Path(__file__).parent
@@ -42,10 +44,12 @@ class App:
     def mainloop(self) -> None:
         """Главный цикл."""
         self.is_running = True
+        pg.mixer.music.play(loops=-1)
         while self.is_running:
             self.handle_events()
             self.update()
             self.render()
+        pg.mixer.music.stop()
         pg.quit()
 
     def update(self) -> None:

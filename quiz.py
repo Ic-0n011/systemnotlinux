@@ -6,9 +6,14 @@ from pathlib import Path
 from typing import Callable
 
 import pygame as pg
+from pygame.mixer import Sound
 
 import config as cfg
 from questions import easy
+
+pg.mixer.init()
+
+click = pg.mixer.Sound("media/click.ogg")
 
 
 class Quiz:
@@ -173,6 +178,7 @@ class Quiz:
         """Реакция на события."""
         for event in events:
             if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                click.play()
                 for sprite in self.sprites:
                     if isinstance(sprite, Button):
                         sprite.on_click()

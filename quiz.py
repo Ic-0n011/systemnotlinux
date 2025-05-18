@@ -1,5 +1,4 @@
 """Модуль викторины."""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -8,26 +7,33 @@ from typing import Callable
 import pygame as pg
 
 import config as cfg
-from questions import easy
-
-pg.mixer.init()
-
-click = pg.mixer.Sound("media/click.wav")  # инициализация звука нажатия
 
 
 class Quiz:
     """Викторина."""
 
-    def __init__(self, screen: pg.Surface) -> None:
+    def __init__(
+            self,
+            screen: pg.Surface,
+            questions: list[dict],
+            return_callback: Callable,
+    ) -> None:
         """Викторина."""
         self.screen = screen
-        self.questions = easy
+        self.questions = questions
+        self.return_callback = return_callback
+
         self.current_question_idx = 0
         self.right_answer_counter = 0
         self.wrong_answer_counter = 0
+
+        self.question_time_limit = 10_000  # 10 секунд в миллисекундах
+        self.question_start_time = pg.time.get_ticks()
+        self.time_font = cfg.FONT_TEXT
+
+        self.quiz_finished = False
+
         self.sprites = pg.sprite.Group()
-        self.finished = False
-        self.restart_button: Button | None = None
         self.make_widjets()
 
     def make_widjets(self) -> None:
@@ -52,7 +58,7 @@ class Quiz:
 
         button_x = int(self.screen.get_width() * 0.16)
         button_y = int(self.screen.get_height() * 0.4)
-        button_width = int(self.screen.get_width() * 0.68) - 20
+        button_width = int(self.screen.get_width() * 0.60)
         button_margin = 20
         current_y = button_y
 
@@ -76,27 +82,24 @@ class Quiz:
                     text_x = int(self.screen.get_width() * 0.16)
                     text_max_width = int(self.screen.get_width() * 0.76)
                     percent = self.right_answer_counter / len(self.questions) * 100
-                    result_text = (
-                        f"Вы ответили правильно на {round(percent)}% вопросов. "
-                        f"Дано правильных ответов — {self.right_answer_counter}, "
-                        f"а неправильных — {self.wrong_answer_counter}. "
-                        f"Всего вопросов — {self.current_question_idx + 1}."
-                    )
-                    self._create_text(result_text, (text_x, text_y), text_max_width)
+                    text = f"Вы ответили правильно на {round(percent)}% вопросов. "
+                    text += f"Дано правильных ответов - {self.right_answer_counter}, "
+                    text += f"а неправильных - {self.wrong_answer_counter}. "
+                    text += f"Всего вопросов {self.current_question_idx + 1}. "
+                    self.quiz_finished = True
+                    self._create_text(text, (text_x, text_y), text_max_width)
 
-                    # Кнопка повтора
-                    btn_text = self.wrap_text(
-                        "Начать заново", cfg.FONT_BUTTON, text_max_width
-                    )
-                    btn_y = text_y + 150
-                    self.restart_button = Button(
+                    button_x = int(self.screen.get_width() * 0.5)
+                    button_y = int(self.screen.get_height() * 0.4)
+                    button_width = int(self.screen.get_width() * 0.38)
+                    option = "Вернуться в меню"
+                    Button(
                         self.sprites,
-                        btn_text,
-                        (text_x, btn_y),
-                        self.restart_quiz,
-                        max_width=text_max_width,
+                        self.wrap_text(option, cfg.FONT_BUTTON, button_width),
+                        (button_x, button_y),
+                        self.return_callback,
+                        button_width,
                     )
-                    self.finished = True
 
             # Создание кнопки
             btn = Button(
@@ -107,22 +110,16 @@ class Quiz:
                 max_width=button_width,
             )
 
+            # Перемещение вниз для следующей кнопки
             current_y += btn.rect.height + button_margin
+        self.question_start_time = pg.time.get_ticks()
 
-    def restart_quiz(self) -> None:
-        """Сброс викторины."""
-        self.current_question_idx = 0
-        self.right_answer_counter = 0
-        self.wrong_answer_counter = 0
-        self.finished = False
-        self.sprites.empty()
-        self.make_widjets()
 
     def _create_text(
-        self,
-        text: str,
-        coords: tuple[int, int],
-        max_width: int,
+            self,
+            text: str,
+            coords: tuple[int, int],
+            max_width: int,
     ) -> None:
         """Создает спрайты Text для каждой строки вопроса."""
         lines = self.wrap_text(text, cfg.FONT_TEXT, max_width)
@@ -133,16 +130,18 @@ class Quiz:
             y += line_height
 
     def wrap_text(self, text: str, font: pg.font.Font, max_width: int) -> list[str]:
-        """Разбивает текст на строки, не превышающие max_width, с переносом длинных слов."""
+        """Разбивает текст на строки, не превышающие max_width."""
         words = text.split(" ")
         lines = []
         current_line = ""
 
         for word in words:
+            # Проверяем, помещается ли слово целиком
             test_line = current_line + word + " "
             if font.size(test_line)[0] <= max_width:
                 current_line = test_line
-            else:
+            else:  # noqa: PLR5501
+                # Если слово слишком длинное, разбиваем его с дефисом
                 if font.size(word)[0] > max_width:
                     temp_word = ""
                     for char in word:
@@ -150,34 +149,79 @@ class Quiz:
                         if font.size(current_line + test_word)[0] <= max_width:
                             temp_word += char
                         else:
+                            # Добавляем текущую линию с дефисом
                             if current_line:
                                 lines.append(current_line.strip())
                                 current_line = ""
                             lines.append(temp_word + "-")
                             temp_word = char
+                    # Оставшаяся часть слова
                     current_line = temp_word + " "
                 else:
+                    # Если слово помещается в новую строку
                     if current_line:
                         lines.append(current_line.strip())
                     current_line = word + " "
 
+        # Добавляем последнюю строку, если она не пустая
         if current_line:
             lines.append(current_line.strip())
 
         return lines
 
     def update(self) -> None:
-        """Обновление событий."""
+        """Обновление состояния, включая таймер."""
+        current_time = pg.time.get_ticks()
+        elapsed_time = current_time - self.question_start_time
+
+        if self.current_question_idx < len(self.questions):
+            if elapsed_time >= self.question_time_limit:
+                self.wrong_answer_counter += 1
+                if len(self.questions) > self.current_question_idx + 1:
+                    self.current_question_idx += 1
+                    self.sprites.empty()
+                    self.make_widjets()
+                else:
+                    self.sprites.empty()
+                    text_y = int(self.screen.get_height() * 0.15)
+                    text_x = int(self.screen.get_width() * 0.16)
+                    text_max_width = int(self.screen.get_width() * 0.76)
+                    percent = self.right_answer_counter / len(self.questions) * 100
+                    text = f"Вы ответили правильно на {round(percent)}% вопросов. "
+                    text += f"Дано правильных ответов - {self.right_answer_counter}, "
+                    text += f"а неправильных - {self.wrong_answer_counter}. "
+                    text += f"Всего вопросов {self.current_question_idx + 1}. "
+                    self._create_text(text, (text_x, text_y), text_max_width)
+
+                    button_x = int(self.screen.get_width() * 0.5)
+                    button_y = int(self.screen.get_height() * 0.4)
+                    button_width = int(self.screen.get_width() * 0.38)
+                    option = "Вернуться в меню"
+                    Button(
+                        self.sprites,
+                        self.wrap_text(option, cfg.FONT_BUTTON, button_width),
+                        (button_x, button_y),
+                        self.return_callback,
+                        button_width,
+                    )
+
 
     def render(self) -> None:
-        """Отрисовка."""
+        """Отрисовка спрайтов и таймера."""
         self.sprites.draw(self.screen)
+
+        # Отрисовка таймера только если викторина ещё не закончена
+        if not self.quiz_finished:
+            time_left_ms = max(0, self.question_time_limit - (pg.time.get_ticks() - self.question_start_time))
+            time_left_sec = round(time_left_ms / 1000, 1)
+            timer_text = f"Осталось времени: {time_left_sec} сек"
+            timer_surf = self.time_font.render(timer_text, True, cfg.RED)
+            self.screen.blit(timer_surf, (10, 70))
 
     def handle_events(self, events: list[pg.event.Event]) -> None:
         """Реакция на события."""
         for event in events:
             if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                click.play()  # звук нажатия
                 for sprite in self.sprites:
                     if isinstance(sprite, Button):
                         sprite.on_click()
@@ -208,6 +252,9 @@ class Button(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
 
+        pg.mixer.init()
+        self.click = pg.mixer.Sound(cfg.CLICK_PATH)
+
     def _create_button_surface(self) -> pg.Surface:
         """Создаёт поверхность кнопки с фоном и текстом."""
         line_height = self.font.get_height()
@@ -228,6 +275,7 @@ class Button(pg.sprite.Sprite):
     def on_click(self) -> None:
         """Действие на нажатие."""
         if self.rect.collidepoint(pg.mouse.get_pos()):
+            self.click.play()
             self.callback()
 
 
@@ -235,12 +283,12 @@ class Text(pg.sprite.Sprite):
     """Выводит данный ему текст."""
 
     def __init__(
-        self,
-        group: pg.sprite.Group,
-        text: str,
-        coords: tuple[int, int],
-        *groups: pg.sprite.AbstractGroup,
-    ) -> None:
+            self,
+            group: pg.sprite.Group,
+            text: str,
+            coords: tuple[int, int],
+            *groups: pg.sprite.AbstractGroup,
+            ) -> None:
         """Выводит данный ему текст."""
         super().__init__(*groups)
         group.add(self)
@@ -257,18 +305,20 @@ class Image(pg.sprite.Sprite):
     """Выводит изображение вместо текста."""
 
     def __init__(
-        self,
-        group: pg.sprite.Group,
-        image_name: str,
-        coords: tuple[int, int],
-        *groups: pg.sprite.AbstractGroup,
+            self,
+            group: pg.sprite.Group,
+            image_name: str,  # Имя файла изображения в папке media
+            coords: tuple[int, int],
+            *groups: pg.sprite.AbstractGroup,
     ) -> None:
         """Инициализирует спрайт с изображением из папки media."""
         super().__init__(*groups)
         group.add(self)
         self.coords = coords
 
+        # Формируем путь к изображению в папке media
         media_path = Path("media") / image_name
+        # Загружаем изображение
         self.image = pg.image.load(str(media_path)).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords

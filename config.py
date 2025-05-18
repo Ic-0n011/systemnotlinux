@@ -1,4 +1,6 @@
 """Модуль конфигураций."""
+from pathlib import Path
+
 import pygame as pg
 
 # Шрифты
@@ -13,3 +15,9 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+
+base_path = Path(__file__).parent
+
+BACKGROUND_PATH = base_path / "media" / "background.jpg"
+BACKGROUND_MUSIC_PATH = base_path / "media" / "music.mp3"
+CLICK_PATH = base_path / "media" / "click.wav"

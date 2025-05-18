@@ -15,17 +15,15 @@ class Quiz:
             self,
             screen: pg.Surface,
             questions: list[dict],
-            return_callback: Callable,
+            return_callback: Callable[[], None],
     ) -> None:
         """Викторина."""
         self.screen = screen
         self.questions = questions
         self.return_callback = return_callback
-
         self.current_question_idx = 0
         self.right_answer_counter = 0
         self.wrong_answer_counter = 0
-
         self.sprites = pg.sprite.Group()
         self.make_widjets()
 
@@ -38,25 +36,30 @@ class Quiz:
         Text(self.sprites, counter, (10, 10))
 
         # Текст c вопросом
-        text = question["text"]
-        qubox_y = int(self.screen.get_height() * 0.15)
-        qubox_x = int(self.screen.get_width() * 0.16)
-        qubox_max_width = int(self.screen.get_width() * 0.8)
+        text_x = int(self.screen.get_width() * 0.07)
+        text_y = int(self.screen.get_height() * 0.15)
+        text_max_width = int(self.screen.get_width() * 0.68)
+        self._create_text(question["text"], (text_x, text_y), text_max_width)
 
-        self._create_text(text, (qubox_x, qubox_y), qubox_max_width)
+        # Изображение (если есть, справа от текста)
+        image_x = int(self.screen.get_width() * 0.79)
+        image_y = int(self.screen.get_height() * 0.15)
+        image_max_size = int(self.screen.get_height() * 0.27)
+        image_name = question.get("image_name")
+        if image_name:
+            Image(self.sprites, image_name, (image_x, image_y), image_max_size)
 
         # Кнопки
-        answer_idx = question["answer_idx"]
-        options = question["options"]
-
-        button_x = int(self.screen.get_width() * 0.16)
-        button_y = int(self.screen.get_height() * 0.4)
-        button_width = int(self.screen.get_width() * 0.60)
+        button_x = int(self.screen.get_width() * 0.2)
+        button_y = int(self.screen.get_height() * 0.6)
+        button_width = int(self.screen.get_width() * 0.6)
         button_margin = 20
         current_y = button_y
 
-        for idx, option in enumerate(options):
+        answer_idx = question["answer_idx"]
+        options = question["options"]
 
+        for idx, option in enumerate(options):
             def callback(num: int) -> None:
                 """Эта функция вызывается при вызове кнопки."""
                 if answer_idx == num - 1:
@@ -81,8 +84,9 @@ class Quiz:
                     text += f"Всего вопросов {self.current_question_idx + 1}. "
                     self._create_text(text, (text_x, text_y), text_max_width)
 
-                    button_x = int(self.screen.get_width() * 0.5)
-                    button_y = int(self.screen.get_height() * 0.4)
+                    # Кнопка "Вернуться в меню"
+                    button_x = int(self.screen.get_width() * 0.6)
+                    button_y = int(self.screen.get_height() * 0.8)
                     button_width = int(self.screen.get_width() * 0.38)
                     option = "Вернуться в меню"
                     Button(
@@ -90,7 +94,7 @@ class Quiz:
                         self.wrap_text(option, cfg.FONT_BUTTON, button_width),
                         (button_x, button_y),
                         self.return_callback,
-                        button_width,
+                        max_width=button_width,
                     )
 
             # Создание кнопки
@@ -101,8 +105,6 @@ class Quiz:
                 lambda param=idx + 1: callback(param),
                 max_width=button_width,
             )
-
-            # Перемещение вниз для следующей кнопки
             current_y += btn.rect.height + button_margin
 
     def _create_text(
@@ -124,39 +126,29 @@ class Quiz:
         words = text.split(" ")
         lines = []
         current_line = ""
-
         for word in words:
-            # Проверяем, помещается ли слово целиком
             test_line = current_line + word + " "
             if font.size(test_line)[0] <= max_width:
                 current_line = test_line
-            else:  # noqa: PLR5501
-                # Если слово слишком длинное, разбиваем его с дефисом
-                if font.size(word)[0] > max_width:
-                    temp_word = ""
-                    for char in word:
-                        test_word = temp_word + char + "-"
-                        if font.size(current_line + test_word)[0] <= max_width:
-                            temp_word += char
-                        else:
-                            # Добавляем текущую линию с дефисом
-                            if current_line:
-                                lines.append(current_line.strip())
-                                current_line = ""
-                            lines.append(temp_word + "-")
-                            temp_word = char
-                    # Оставшаяся часть слова
-                    current_line = temp_word + " "
-                else:
-                    # Если слово помещается в новую строку
-                    if current_line:
-                        lines.append(current_line.strip())
-                    current_line = word + " "
-
-        # Добавляем последнюю строку, если она не пустая
+            elif font.size(word)[0] > max_width:
+                temp_word = ""
+                for char in word:
+                    test_word = temp_word + char + "-"
+                    if font.size(current_line + test_word)[0] <= max_width:
+                        temp_word += char
+                    else:
+                        if current_line:
+                            lines.append(current_line.strip())
+                            current_line = ""
+                        lines.append(temp_word + "-")
+                        temp_word = char
+                current_line = temp_word + " "
+            else:
+                if current_line:
+                    lines.append(current_line.strip())
+                current_line = word + " "
         if current_line:
             lines.append(current_line.strip())
-
         return lines
 
     def update(self) -> None:
@@ -195,11 +187,9 @@ class Button(pg.sprite.Sprite):
         self.callback = callback
         self.max_width = max_width
         self.font = cfg.FONT_BUTTON
-
         self.image = self._create_button_surface()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
-
         pg.mixer.init()
         self.click = pg.mixer.Sound(cfg.CLICK_PATH)
 
@@ -209,15 +199,10 @@ class Button(pg.sprite.Sprite):
         padding = 10
         box_height = line_height * len(self.option) + padding * 2
         surface = pg.Surface((self.max_width, box_height), pg.SRCALPHA)
-
-        # Фон кнопки
         pg.draw.rect(surface, (230, 230, 230), surface.get_rect(), border_radius=6)
-
-        # Рисуем текст
         for i, line in enumerate(self.option):
             text_surf = self.font.render(line, True, cfg.BLUE)
             surface.blit(text_surf, (padding, padding + i * line_height))
-
         return surface
 
     def on_click(self) -> None:
@@ -236,14 +221,13 @@ class Text(pg.sprite.Sprite):
             text: str,
             coords: tuple[int, int],
             *groups: pg.sprite.AbstractGroup,
-            ) -> None:
+    ) -> None:
         """Выводит данный ему текст."""
         super().__init__(*groups)
         group.add(self)
         self.text = text
         self.coords = coords
         self.font = cfg.FONT_TEXT
-
         self.image = self.font.render(text, True, cfg.GREEN)
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
@@ -257,16 +241,16 @@ class Image(pg.sprite.Sprite):
             group: pg.sprite.Group,
             image_name: str,
             coords: tuple[int, int],
+            image_max_size: int,
             *groups: pg.sprite.AbstractGroup,
     ) -> None:
         """Инициализирует спрайт с изображением из папки media."""
         super().__init__(*groups)
         group.add(self)
         self.coords = coords
-
-        # Формируем путь к изображению в папке media
+        self.image_max_size = image_max_size
         image_path = cfg.MEDIA_PATH / image_name
-        # Загружаем изображение
         self.image = pg.image.load(image_path).convert_alpha()
+        self.image = pg.transform.scale(self.image, (image_max_size, image_max_size))
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords

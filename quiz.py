@@ -251,7 +251,7 @@ class Text(pg.sprite.Sprite):
 
 
 class Image(pg.sprite.Sprite):
-    """Выводит изображение вместо текста."""
+    """Выводит изображение."""
 
     def __init__(
             self,

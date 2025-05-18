@@ -16,20 +16,15 @@ class App:
     def __init__(self) -> None:
         """Приложение."""
         pg.init()
-        # Полноэкранный режим
         self.screen = pg.display.set_mode()
         self.is_running = False
 
-        # Формируем абсолютный путь к файлу
+        # Загрузка фона
         base_path = Path(__file__).parent
         background_path = base_path / "media" / "background.jpg"
-
         self.background = pg.image.load(str(background_path)).convert()
-
-        # Обрезаем изображение под размер экрана
         screen_size = self.screen.get_size()
         img_rect = self.background.get_rect()
-        # Центрируем и обрезаем, чтобы соответствовать экрану
         crop_rect = pg.Rect(
             (img_rect.width - screen_size[0]) // 2,
             (img_rect.height - screen_size[1]) // 2,
@@ -45,8 +40,12 @@ class App:
             "Автор теории Всего": hard,
         }
 
-        # Начинаем с меню
-        self.scene = Menu(self.screen, self.start_quiz)
+        # Передаем ключи словаря в Menu
+        self.scene = Menu(
+            self.screen,
+            self.start_quiz,
+            list(self.difficulty_questions.keys()),
+        )
 
         self.mainloop()
 
@@ -77,13 +76,11 @@ class App:
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     self.is_running = False
-                else:
-                    pass
+
         self.scene.handle_events(events)
 
     def render(self) -> None:
         """Отрисовка."""
-        # Отрисовываем фоновое изображение вместо заливки цветом
         self.screen.blit(self.background, (0, 0))
         self.scene.render()
         pg.display.flip()
@@ -92,10 +89,16 @@ class App:
 class Menu:
     """Меню."""
 
-    def __init__(self, screen: pg.Surface, callback: Callable[[str], None]) -> None:
+    def __init__(
+        self,
+        screen: pg.Surface,
+        callback: Callable[[str], None],
+        difficulties: list[str],  # Новый параметр для списка ключей
+    ) -> None:
         """Меню выбора сложности."""
         self.screen = screen
         self.callback = callback
+        self.difficulties = difficulties  # Сохраняем переданные ключи
         self.sprites = pg.sprite.Group()
         self._create_widgets()
 
@@ -115,21 +118,15 @@ class Menu:
         button_x = (screen_width - button_width) / 2
         button_y_start = int(screen_height * 0.4)
         button_margin = 20
-
-        difficulties = [
-            "Лаборант космической программы",
-            "Нобелевский лауреат",
-            "Автор теории Всего",
-        ]
         current_y = button_y_start
 
-        for diff in difficulties:
+        for diff in self.difficulties:
             button_text = [diff]
             btn = Button(
                 self.sprites,
                 button_text,
                 (button_x, current_y),
-                lambda d=diff: self.callback(d),
+                lambda d=diff: self.callback(d),  # Передаем ключ напрямую
                 max_width=button_width,
             )
             current_y += btn.rect.height + button_margin
@@ -152,7 +149,6 @@ class Menu:
 
 if __name__ == "__main__":
     App()
-
 
 """
 TODO:

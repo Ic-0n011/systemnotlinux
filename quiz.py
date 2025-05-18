@@ -45,7 +45,7 @@ class Quiz:
 
         button_x = int(self.screen.get_width() * 0.16)
         button_y = int(self.screen.get_height() * 0.4)
-        button_width = int(self.screen.get_width() * 0.68) - 20
+        button_width = int(self.screen.get_width() * 0.60)
         button_margin = 20
         current_y = button_y
 
@@ -74,6 +74,21 @@ class Quiz:
                     text += f"а неправильных - {self.wrong_answer_counter}. "
                     text += f"Всего вопросов {self.current_question_idx + 1}. "
                     self._create_text(text, (text_x, text_y), text_max_width)
+
+
+                    def a() -> None:
+                        """"""
+                    button_x = int(self.screen.get_width() * 0.5)
+                    button_y = int(self.screen.get_height() * 0.4)
+                    button_width = int(self.screen.get_width() * 0.38)
+                    option = "Вернуться в меню"
+                    Button(
+                        self.sprites,
+                        self.wrap_text(option, cfg.FONT_BUTTON, button_width),
+                        (button_x, button_y),
+                        a,
+                        button_width,
+                    )
 
             # Создание кнопки
             btn = Button(

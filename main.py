@@ -52,7 +52,15 @@ class App:
     def start_quiz(self, difficulty: str) -> None:
         """Запускает викторину с выбранной сложностью."""
         questions = self.difficulty_questions[difficulty]
-        self.scene = Quiz(self.screen, questions)
+        self.scene = Quiz(self.screen, questions, self.return_to_menu)
+
+    def return_to_menu(self) -> None:
+        """Возвращает в меню."""
+        self.scene = Menu(
+            self.screen,
+            self.start_quiz,
+            list(self.difficulty_questions.keys()),
+        )
 
     def mainloop(self) -> None:
         """Главный цикл."""

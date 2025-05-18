@@ -12,13 +12,21 @@ import config as cfg
 class Quiz:
     """Викторина."""
 
-    def __init__(self, screen: pg.Surface, questions: list[dict]) -> None:
+    def __init__(
+            self,
+            screen: pg.Surface,
+            questions: list[dict],
+            return_callback: Callable,
+    ) -> None:
         """Викторина."""
         self.screen = screen
         self.questions = questions
+        self.return_callback = return_callback
+
         self.current_question_idx = 0
         self.right_answer_counter = 0
         self.wrong_answer_counter = 0
+
         self.sprites = pg.sprite.Group()
         self.make_widjets()
 
@@ -75,9 +83,6 @@ class Quiz:
                     text += f"Всего вопросов {self.current_question_idx + 1}. "
                     self._create_text(text, (text_x, text_y), text_max_width)
 
-
-                    def a() -> None:
-                        """"""
                     button_x = int(self.screen.get_width() * 0.5)
                     button_y = int(self.screen.get_height() * 0.4)
                     button_width = int(self.screen.get_width() * 0.38)
@@ -86,7 +91,7 @@ class Quiz:
                         self.sprites,
                         self.wrap_text(option, cfg.FONT_BUTTON, button_width),
                         (button_x, button_y),
-                        a,
+                        self.return_callback,
                         button_width,
                     )
 

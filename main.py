@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pygame as pg
 
-import config as cf
+import config as cfg
 from quiz import Quiz
 
 

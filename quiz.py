@@ -6,7 +6,7 @@ from typing import Callable
 
 import pygame as pg
 
-import config as cf
+import config as cfg
 from questions import easy
 
 
@@ -79,7 +79,7 @@ class Quiz:
             # Создание кнопки
             btn = Button(
                 self.sprites,
-                self.wrap_text(option, cf.FONT_BUTTON, button_width),
+                self.wrap_text(option, cfg.FONT_BUTTON, button_width),
                 (button_x, current_y),
                 lambda param=idx + 1: callback(param),
                 max_width=button_width,
@@ -95,9 +95,9 @@ class Quiz:
             max_width: int,
     ) -> None:
         """Создает спрайты Text для каждой строки вопроса."""
-        lines = self.wrap_text(text, cf.FONT_TEXT, max_width)
+        lines = self.wrap_text(text, cfg.FONT_TEXT, max_width)
         x, y = coords
-        line_height = cf.FONT_TEXT.get_height()
+        line_height = cfg.FONT_TEXT.get_height()
         for line in lines:
             Text(self.sprites, line, (x, y))
             y += line_height
@@ -177,7 +177,7 @@ class Button(pg.sprite.Sprite):
         self.coords = coords
         self.callback = callback
         self.max_width = max_width
-        self.font = cf.FONT_BUTTON
+        self.font = cfg.FONT_BUTTON
 
         self.image = self._create_button_surface()
         self.rect = self.image.get_rect()
@@ -195,7 +195,7 @@ class Button(pg.sprite.Sprite):
 
         # Рисуем текст
         for i, line in enumerate(self.option):
-            text_surf = self.font.render(line, True, cf.BLUE)
+            text_surf = self.font.render(line, True, cfg.BLUE)
             surface.blit(text_surf, (padding, padding + i * line_height))
 
         return surface
@@ -221,9 +221,9 @@ class Text(pg.sprite.Sprite):
         group.add(self)
         self.text = text
         self.coords = coords
-        self.font = cf.FONT_TEXT
+        self.font = cfg.FONT_TEXT
 
-        self.image = self.font.render(text, True, cf.GREEN)
+        self.image = self.font.render(text, True, cfg.GREEN)
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
 

@@ -36,7 +36,6 @@ class Quiz:
 
         # Счетчик
         counter = str(self.current_question_idx + 1) + " из " + str(len(self.questions))
-
         Text(self.sprites, counter, (10, 10))
 
         # Текст c вопросом
@@ -202,6 +201,10 @@ class Button(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
 
+        pg.mixer.init()
+        click_path = cfg.BASE_PATH / "media" / "click.wav"
+        self.click = pg.mixer.Sound(click_path)
+
     def _create_button_surface(self) -> pg.Surface:
         """Создаёт поверхность кнопки с фоном и текстом."""
         line_height = self.font.get_height()
@@ -222,6 +225,7 @@ class Button(pg.sprite.Sprite):
     def on_click(self) -> None:
         """Действие на нажатие."""
         if self.rect.collidepoint(pg.mouse.get_pos()):
+            self.click.play()
             self.callback()
 
 

@@ -16,13 +16,19 @@ class App:
     def __init__(self) -> None:
         """Приложение."""
         pg.init()
+        pg.mixer.init()
+
         self.screen = pg.display.set_mode()
         self.is_running = False
 
         # Загрузка фона
-        base_path = Path(__file__).parent
-        background_path = base_path / "media" / "background.jpg"
+
+        background_path = cfg.BASE_PATH / "media" / "background.jpg"
+        background_music_path = cfg.BASE_PATH / "media" / "music.mp3"
+
         self.background = pg.image.load(str(background_path)).convert()
+        pg.mixer.music.load(background_music_path)
+
         screen_size = self.screen.get_size()
         img_rect = self.background.get_rect()
         crop_rect = pg.Rect(
@@ -65,10 +71,13 @@ class App:
     def mainloop(self) -> None:
         """Главный цикл."""
         self.is_running = True
+        pg.mixer.music.set_volume(0.2)
+        pg.mixer.music.play(loops=-1)
         while self.is_running:
             self.handle_events()
             self.update()
             self.render()
+        pg.mixer.music.stop()
         pg.quit()
 
     def update(self) -> None:
@@ -162,5 +171,4 @@ if __name__ == "__main__":
 TODO:
     картинки к вопросам
     таймер
-    музыка
 """

@@ -1,4 +1,6 @@
 """Модуль конфигураций."""
+from pathlib import Path
+
 import pygame as pg
 
 # Шрифты
@@ -13,3 +15,5 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+
+BASE_PATH = Path(__file__).parent

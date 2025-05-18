@@ -1,6 +1,5 @@
 """Модуль приложения."""
 
-from pathlib import Path
 from typing import Callable
 
 import pygame as pg
@@ -21,13 +20,8 @@ class App:
         self.screen = pg.display.set_mode()
         self.is_running = False
 
-        # Загрузка фона
-
-        background_path = cfg.BASE_PATH / "media" / "background.jpg"
-        background_music_path = cfg.BASE_PATH / "media" / "music.mp3"
-
-        self.background = pg.image.load(str(background_path)).convert()
-        pg.mixer.music.load(background_music_path)
+        self.background = pg.image.load(cfg.BACKGROUND_PATH).convert()
+        pg.mixer.music.load(cfg.BACKGROUND_MUSIC_PATH)
 
         screen_size = self.screen.get_size()
         img_rect = self.background.get_rect()

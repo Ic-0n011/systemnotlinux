@@ -202,8 +202,7 @@ class Button(pg.sprite.Sprite):
         self.rect.topleft = self.coords
 
         pg.mixer.init()
-        click_path = cfg.BASE_PATH / "media" / "click.wav"
-        self.click = pg.mixer.Sound(click_path)
+        self.click = pg.mixer.Sound(cfg.CLICK_PATH)
 
     def _create_button_surface(self) -> pg.Surface:
         """Создаёт поверхность кнопки с фоном и текстом."""

@@ -16,4 +16,8 @@ BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-BASE_PATH = Path(__file__).parent
+base_path = Path(__file__).parent
+
+BACKGROUND_PATH = base_path / "media" / "background.jpg"
+BACKGROUND_MUSIC_PATH = base_path / "media" / "music.mp3"
+CLICK_PATH = base_path / "media" / "click.wav"

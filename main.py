@@ -1,11 +1,13 @@
 """Модуль приложения."""
 
 from pathlib import Path
+from typing import Callable
 
 import pygame as pg
 
 import config as cfg
-from quiz import Quiz
+from questions import easy, hard, medium
+from quiz import Button, Quiz, Text
 
 
 class App:
@@ -17,7 +19,6 @@ class App:
         # Полноэкранный режим
         self.screen = pg.display.set_mode()
         self.is_running = False
-        self.scene = Quiz(self.screen)
 
         # Формируем абсолютный путь к файлу
         base_path = Path(__file__).parent
@@ -37,7 +38,22 @@ class App:
         )
         self.background = self.background.subsurface(crop_rect)
 
+        # Словарь сложностей
+        self.difficulty_questions = {
+            "Лаборант космической программы": easy,
+            "Нобелевский лауреат": medium,
+            "Автор теории Всего": hard,
+        }
+
+        # Начинаем с меню
+        self.scene = Menu(self.screen, self.start_quiz)
+
         self.mainloop()
+
+    def start_quiz(self, difficulty: str) -> None:
+        """Запускает викторину с выбранной сложностью."""
+        questions = self.difficulty_questions[difficulty]
+        self.scene = Quiz(self.screen, questions)
 
     def mainloop(self) -> None:
         """Главный цикл."""
@@ -73,6 +89,67 @@ class App:
         pg.display.flip()
 
 
+class Menu:
+    """Меню."""
+
+    def __init__(self, screen: pg.Surface, callback: Callable[[str], None]) -> None:
+        """Меню выбора сложности."""
+        self.screen = screen
+        self.callback = callback
+        self.sprites = pg.sprite.Group()
+        self._create_widgets()
+
+    def _create_widgets(self) -> None:
+        """Создает элементы меню."""
+        screen_width, screen_height = self.screen.get_size()
+
+        # Заголовок
+        title_text = "Выберите сложность"
+        title_surf = cfg.FONT_TEXT.render(title_text, True, cfg.GREEN)
+        title_x = (screen_width - title_surf.get_width()) / 2
+        title_y = int(screen_height * 0.1)
+        Text(self.sprites, title_text, (title_x, title_y))
+
+        # Кнопки
+        button_width = int(screen_width * 0.4)
+        button_x = (screen_width - button_width) / 2
+        button_y_start = int(screen_height * 0.4)
+        button_margin = 20
+
+        difficulties = [
+            "Лаборант космической программы",
+            "Нобелевский лауреат",
+            "Автор теории Всего",
+        ]
+        current_y = button_y_start
+
+        for diff in difficulties:
+            button_text = [diff]
+            btn = Button(
+                self.sprites,
+                button_text,
+                (button_x, current_y),
+                lambda d=diff: self.callback(d),
+                max_width=button_width,
+            )
+            current_y += btn.rect.height + button_margin
+
+    def update(self) -> None:
+        """Обновление."""
+
+    def render(self) -> None:
+        """Отрисовка меню."""
+        self.sprites.draw(self.screen)
+
+    def handle_events(self, events: list[pg.event.Event]) -> None:
+        """Обработка событий."""
+        for event in events:
+            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                for sprite in self.sprites:
+                    if isinstance(sprite, Button):
+                        sprite.on_click()
+
+
 if __name__ == "__main__":
     App()
 
@@ -81,9 +158,6 @@ if __name__ == "__main__":
 TODO:
     картинки к вопросам
     таймер
-    дать выбор уровня сложности
     рестарт
-    больше вопросов
     музыка
-    фон в виде космоса
 """

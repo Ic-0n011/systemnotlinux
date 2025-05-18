@@ -7,16 +7,15 @@ from typing import Callable
 import pygame as pg
 
 import config as cfg
-from questions import easy
 
 
 class Quiz:
     """Викторина."""
 
-    def __init__(self, screen: pg.Surface) -> None:
+    def __init__(self, screen: pg.Surface, questions: list[dict]) -> None:
         """Викторина."""
         self.screen = screen
-        self.questions = easy
+        self.questions = questions
         self.current_question_idx = 0
         self.right_answer_counter = 0
         self.wrong_answer_counter = 0
@@ -70,10 +69,10 @@ class Quiz:
                     text_x = int(self.screen.get_width() * 0.16)
                     text_max_width = int(self.screen.get_width() * 0.76)
                     percent = self.right_answer_counter / len(self.questions) * 100
-                    text = "Вы ответили правильно на " + str(round(percent)) + "% вопросов. "
-                    text += "Дано правильных ответов - " + str(self.right_answer_counter) + ", "
-                    text += "а неправильных - " + str(self.wrong_answer_counter) + ". "
-                    text += "Всего вопросов " + str(self.current_question_idx + 1) + ". "
+                    text = f"Вы ответили правильно на {round(percent)}% вопросов. "
+                    text += f"Дано правильных ответов - {self.right_answer_counter}, "
+                    text += f"а неправильных - {self.wrong_answer_counter}. "
+                    text += f"Всего вопросов {self.current_question_idx + 1}. "
                     self._create_text(text, (text_x, text_y), text_max_width)
 
             # Создание кнопки
@@ -103,7 +102,7 @@ class Quiz:
             y += line_height
 
     def wrap_text(self, text: str, font: pg.font.Font, max_width: int) -> list[str]:
-        """Разбивает текст на строки, не превышающие max_width, с переносом длинных слов."""
+        """Разбивает текст на строки, не превышающие max_width."""
         words = text.split(" ")
         lines = []
         current_line = ""

@@ -33,14 +33,12 @@ class App:
         )
         self.background = self.background.subsurface(crop_rect)
 
-        # Словарь сложностей
         self.difficulty_questions = {
             "Лаборант космической программы": easy,
             "Нобелевский лауреат": medium,
             "Автор теории Всего": hard,
         }
 
-        # Передаем ключи словаря в Menu
         self.scene = Menu(
             self.screen,
             self.start_quiz,

@@ -18,6 +18,8 @@ WHITE = (255, 255, 255)
 
 base_path = Path(__file__).parent
 
-BACKGROUND_PATH = base_path / "media" / "background.jpg"
-BACKGROUND_MUSIC_PATH = base_path / "media" / "music.mp3"
-CLICK_PATH = base_path / "media" / "click.wav"
+MEDIA_PATH = base_path / "media"
+
+BACKGROUND_PATH = MEDIA_PATH / "background.jpg"
+BACKGROUND_MUSIC_PATH = MEDIA_PATH / "music.mp3"
+CLICK_PATH = MEDIA_PATH / "click.wav"

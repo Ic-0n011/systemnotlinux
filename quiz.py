@@ -266,8 +266,8 @@ class Image(pg.sprite.Sprite):
         self.coords = coords
 
         # Формируем путь к изображению в папке media
-        media_path = Path("media") / image_name
+        image_path = cfg.MEDIA_PATH / image_name
         # Загружаем изображение
-        self.image = pg.image.load(str(media_path)).convert_alpha()
+        self.image = pg.image.load(image_path).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords

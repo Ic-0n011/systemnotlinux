@@ -1,5 +1,7 @@
 """Модуль приложения."""
 
+from pathlib import Path
+
 import pygame as pg
 
 import config as cf
@@ -12,9 +14,29 @@ class App:
     def __init__(self) -> None:
         """Приложение."""
         pg.init()
+        # Полноэкранный режим
         self.screen = pg.display.set_mode()
         self.is_running = False
         self.scene = Quiz(self.screen)
+
+        # Формируем абсолютный путь к файлу
+        base_path = Path(__file__).parent
+        background_path = base_path / "media" / "background.jpg"
+
+        self.background = pg.image.load(str(background_path)).convert()
+
+        # Обрезаем изображение под размер экрана
+        screen_size = self.screen.get_size()
+        img_rect = self.background.get_rect()
+        # Центрируем и обрезаем, чтобы соответствовать экрану
+        crop_rect = pg.Rect(
+            (img_rect.width - screen_size[0]) // 2,
+            (img_rect.height - screen_size[1]) // 2,
+            screen_size[0],
+            screen_size[1],
+        )
+        self.background = self.background.subsurface(crop_rect)
+
         self.mainloop()
 
     def mainloop(self) -> None:
@@ -45,7 +67,8 @@ class App:
 
     def render(self) -> None:
         """Отрисовка."""
-        self.screen.fill(cf.BLACK)
+        # Отрисовываем фоновое изображение вместо заливки цветом
+        self.screen.blit(self.background, (0, 0))
         self.scene.render()
         pg.display.flip()
 

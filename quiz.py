@@ -1,6 +1,7 @@
 """Модуль викторины."""
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Callable
 
 import pygame as pg
@@ -226,3 +227,25 @@ class Text(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords
 
+
+class Image(pg.sprite.Sprite):
+    """Выводит изображение вместо текста."""
+
+    def __init__(
+            self,
+            group: pg.sprite.Group,
+            image_name: str,  # Имя файла изображения в папке media
+            coords: tuple[int, int],
+            *groups: pg.sprite.AbstractGroup,
+    ) -> None:
+        """Инициализирует спрайт с изображением из папки media."""
+        super().__init__(*groups)
+        group.add(self)
+        self.coords = coords
+
+        # Формируем путь к изображению в папке media
+        media_path = Path("media") / image_name
+        # Загружаем изображение
+        self.image = pg.image.load(str(media_path)).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.coords

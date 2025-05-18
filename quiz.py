@@ -1,4 +1,5 @@
 """Модуль викторины."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -21,6 +22,8 @@ class Quiz:
         self.right_answer_counter = 0
         self.wrong_answer_counter = 0
         self.sprites = pg.sprite.Group()
+        self.finished = False
+        self.restart_button: Button | None = None
         self.make_widjets()
 
     def make_widjets(self) -> None:
@@ -29,7 +32,6 @@ class Quiz:
 
         # Счетчик
         counter = str(self.current_question_idx + 1) + " из " + str(len(self.questions))
-
         Text(self.sprites, counter, (10, 10))
 
         # Текст c вопросом
@@ -70,11 +72,27 @@ class Quiz:
                     text_x = int(self.screen.get_width() * 0.16)
                     text_max_width = int(self.screen.get_width() * 0.76)
                     percent = self.right_answer_counter / len(self.questions) * 100
-                    text = "Вы ответили правильно на " + str(round(percent)) + "% вопросов. "
-                    text += "Дано правильных ответов - " + str(self.right_answer_counter) + ", "
-                    text += "а неправильных - " + str(self.wrong_answer_counter) + ". "
-                    text += "Всего вопросов " + str(self.current_question_idx + 1) + ". "
-                    self._create_text(text, (text_x, text_y), text_max_width)
+                    result_text = (
+                        f"Вы ответили правильно на {round(percent)}% вопросов. "
+                        f"Дано правильных ответов — {self.right_answer_counter}, "
+                        f"а неправильных — {self.wrong_answer_counter}. "
+                        f"Всего вопросов — {self.current_question_idx + 1}."
+                    )
+                    self._create_text(result_text, (text_x, text_y), text_max_width)
+
+                    # Кнопка повтора
+                    btn_text = self.wrap_text(
+                        "Начать заново", cfg.FONT_BUTTON, text_max_width
+                    )
+                    btn_y = text_y + 150
+                    self.restart_button = Button(
+                        self.sprites,
+                        btn_text,
+                        (text_x, btn_y),
+                        self.restart_quiz,
+                        max_width=text_max_width,
+                    )
+                    self.finished = True
 
             # Создание кнопки
             btn = Button(
@@ -85,14 +103,22 @@ class Quiz:
                 max_width=button_width,
             )
 
-            # Перемещение вниз для следующей кнопки
             current_y += btn.rect.height + button_margin
 
+    def restart_quiz(self) -> None:
+        """Сброс викторины."""
+        self.current_question_idx = 0
+        self.right_answer_counter = 0
+        self.wrong_answer_counter = 0
+        self.finished = False
+        self.sprites.empty()
+        self.make_widjets()
+
     def _create_text(
-            self,
-            text: str,
-            coords: tuple[int, int],
-            max_width: int,
+        self,
+        text: str,
+        coords: tuple[int, int],
+        max_width: int,
     ) -> None:
         """Создает спрайты Text для каждой строки вопроса."""
         lines = self.wrap_text(text, cfg.FONT_TEXT, max_width)
@@ -109,12 +135,10 @@ class Quiz:
         current_line = ""
 
         for word in words:
-            # Проверяем, помещается ли слово целиком
             test_line = current_line + word + " "
             if font.size(test_line)[0] <= max_width:
                 current_line = test_line
-            else:  # noqa: PLR5501
-                # Если слово слишком длинное, разбиваем его с дефисом
+            else:
                 if font.size(word)[0] > max_width:
                     temp_word = ""
                     for char in word:
@@ -122,21 +146,17 @@ class Quiz:
                         if font.size(current_line + test_word)[0] <= max_width:
                             temp_word += char
                         else:
-                            # Добавляем текущую линию с дефисом
                             if current_line:
                                 lines.append(current_line.strip())
                                 current_line = ""
                             lines.append(temp_word + "-")
                             temp_word = char
-                    # Оставшаяся часть слова
                     current_line = temp_word + " "
                 else:
-                    # Если слово помещается в новую строку
                     if current_line:
                         lines.append(current_line.strip())
                     current_line = word + " "
 
-        # Добавляем последнюю строку, если она не пустая
         if current_line:
             lines.append(current_line.strip())
 
@@ -210,12 +230,12 @@ class Text(pg.sprite.Sprite):
     """Выводит данный ему текст."""
 
     def __init__(
-            self,
-            group: pg.sprite.Group,
-            text: str,
-            coords: tuple[int, int],
-            *groups: pg.sprite.AbstractGroup,
-            ) -> None:
+        self,
+        group: pg.sprite.Group,
+        text: str,
+        coords: tuple[int, int],
+        *groups: pg.sprite.AbstractGroup,
+    ) -> None:
         """Выводит данный ему текст."""
         super().__init__(*groups)
         group.add(self)
@@ -232,20 +252,18 @@ class Image(pg.sprite.Sprite):
     """Выводит изображение вместо текста."""
 
     def __init__(
-            self,
-            group: pg.sprite.Group,
-            image_name: str,  # Имя файла изображения в папке media
-            coords: tuple[int, int],
-            *groups: pg.sprite.AbstractGroup,
+        self,
+        group: pg.sprite.Group,
+        image_name: str,
+        coords: tuple[int, int],
+        *groups: pg.sprite.AbstractGroup,
     ) -> None:
         """Инициализирует спрайт с изображением из папки media."""
         super().__init__(*groups)
         group.add(self)
         self.coords = coords
 
-        # Формируем путь к изображению в папке media
         media_path = Path("media") / image_name
-        # Загружаем изображение
         self.image = pg.image.load(str(media_path)).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.coords

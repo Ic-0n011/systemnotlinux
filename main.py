@@ -43,6 +43,7 @@ class App:
             self.screen,
             self.start_quiz,
             list(self.difficulty_questions.keys()),
+            self.exit_app,
         )
 
         self.mainloop()
@@ -58,6 +59,7 @@ class App:
             self.screen,
             self.start_quiz,
             list(self.difficulty_questions.keys()),
+            self.exit_app,
         )
 
     def exit_app(self) -> None:
@@ -106,12 +108,14 @@ class Menu:
         self,
         screen: pg.Surface,
         callback: Callable[[str], None],
-        difficulties: list[str],  # Новый параметр для списка ключей
+        difficulties: list[str],
+        exit_callback: Callable[[], None],
     ) -> None:
         """Меню выбора сложности."""
         self.screen = screen
         self.callback = callback
-        self.difficulties = difficulties  # Сохраняем переданные ключи
+        self.difficulties = difficulties
+        self.exit_callback = exit_callback
         self.sprites = pg.sprite.Group()
         self._create_widgets()
 
@@ -139,10 +143,18 @@ class Menu:
                 self.sprites,
                 button_text,
                 (button_x, current_y),
-                lambda d=diff: self.callback(d),  # Передаем ключ напрямую
+                lambda d=diff: self.callback(d),
                 max_width=button_width,
             )
             current_y += btn.rect.height + button_margin
+
+        # Кнопка выхода
+        Button(
+            self.sprites,
+            ["Выйти из игры"],
+            (10, 10),
+            self.exit_callback,
+        )
 
     def update(self) -> None:
         """Обновление."""

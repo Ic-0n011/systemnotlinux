@@ -60,6 +60,10 @@ class App:
             list(self.difficulty_questions.keys()),
         )
 
+    def exit_app(self) -> None:
+        """Выходит и приложения."""
+        self.is_running = False
+
     def mainloop(self) -> None:
         """Главный цикл."""
         self.is_running = True
@@ -158,9 +162,3 @@ class Menu:
 
 if __name__ == "__main__":
     App()
-
-"""
-TODO:
-    картинки к вопросам
-    таймер
-"""

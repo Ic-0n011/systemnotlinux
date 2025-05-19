@@ -116,8 +116,3 @@ hard = [
         "image_name": "black_hole.jpg",
     },
 ]
-"""
-cosmic_background.jpg
-
-
-"""
